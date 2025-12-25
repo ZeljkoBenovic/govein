@@ -1,3 +1,5 @@
+version: 2
+project_name: govein
 before:
   hooks:
     - go mod tidy
@@ -5,6 +7,8 @@ builds:
   - id: "govein"
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - "-s -w"
     binary: govein
     main: ./main.go
     goarch:
@@ -15,14 +19,41 @@ builds:
       - windows
       - darwin
 dockers:
-  - builds: ["govein"]
+  - use: buildx
+    goos: linux
+    goarch: amd64
     image_templates:
-      - "ghcr.io/ZeljkoBenovic/govein:{{ .Version }}"
-      - "ghcr.io/ZeljkoBenovic/govein:latest"
-    dockerfile: ./docker/Dockerfile
+      - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:latest-amd64"
     build_flag_templates:
-      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
-      - "--platform={{ .Platform }}"
+      - "--pull"
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:{{ .Version }}-arm64"
+      - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:latest-arm64"
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64/v8"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+docker_manifests:
+  - name_template: "ghcr.io/zeljkobenovic/{{ .ProjectName }}:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/zeljkobenovic/{{ .ProjectName }}:latest"
+    image_templates:
+      - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:latest-amd64"
+      - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:latest-arm64"
 archives:
   - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 checksum:
