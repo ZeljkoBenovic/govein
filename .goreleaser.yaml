@@ -22,6 +22,7 @@ dockers:
   - use: buildx
     goos: linux
     goarch: amd64
+    dockerfile: Dockerfile-releaser
     image_templates:
       - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:{{ .Version }}-amd64"
       - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:latest-amd64"
@@ -35,6 +36,7 @@ dockers:
   - use: buildx
     goos: linux
     goarch: arm64
+    dockerfile: Dockerfile-releaser
     image_templates:
       - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:{{ .Version }}-arm64"
       - "ghcr.io/zeljkobenovic/{{ .ProjectName }}:latest-arm64"
