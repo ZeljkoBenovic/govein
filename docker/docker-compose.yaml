@@ -1,0 +1,16 @@
+services:
+  govein:
+    image: "govein:latest"
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ../examples/config-example.yaml:/app/config.yaml
+    command:
+      - -config
+      - /app/config.yaml
+    environment:
+      - VEEAM_ADMIN_USERNAME=admin
+      - VEEAM_ADMIN_PASSWORD=password
+      - INFLUXDB_TOKEN=secret-token
+      - INFLUXDB_ORG=secret-org

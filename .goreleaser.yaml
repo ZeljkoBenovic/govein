@@ -1,0 +1,35 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: "govein"
+    env:
+      - CGO_ENABLED=0
+    binary: govein
+    main: ./main.go
+    goarch:
+      - amd64
+      - arm64
+    goos:
+      - linux
+      - windows
+      - darwin
+dockers:
+  - builds: ["govein"]
+    image_templates:
+      - "ghcr.io/ZeljkoBenovic/govein:{{ .Version }}"
+      - "ghcr.io/ZeljkoBenovic/govein:latest"
+    dockerfile: ./docker/Dockerfile
+    build_flag_templates:
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--platform={{ .Platform }}"
+archives:
+  - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+checksum:
+  name_template: 'checksums.txt'
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
