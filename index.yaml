@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  govein:
+  - apiVersion: v2
+    appVersion: 0.0.2
+    created: "2025-12-26T02:29:18.523192361Z"
+    description: A Helm chart for Kubernetes
+    digest: 385d5e10c7569fdb5a9bceccd7e37f3415cce2d0e8a735117b3d2ee48c1c4b19
+    name: govein
+    type: application
+    urls:
+    - https://github.com/ZeljkoBenovic/govein/releases/download/govein-0.0.1/govein-0.0.1.tgz
+    version: 0.0.1
+generated: "2025-12-26T02:29:18.523198653Z"
