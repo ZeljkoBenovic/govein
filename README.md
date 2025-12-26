@@ -68,5 +68,10 @@ He also has a great writeup on how to connect this together
 https://jorgedelacruz.uk/2023/05/31/looking-for-the-perfect-dashboard-influxdb-telegraf-and-grafana-part-xliv-monitoring-veeam-backup-replication-api/, 
 but instead of `veeam_backup_and_replication.sh` use this exporter. 
 
+## Helm Chart
+* Add repo `helm repo add govein https://zeljkobenovic.github.io/govein`
+* Install using `helm install my-govein govein/govein`
+* Uninstall with `helm uninstall my-govein`
+
 ## License
 MIT
