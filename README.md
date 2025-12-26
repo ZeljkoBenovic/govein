@@ -1,6 +1,7 @@
 # GOVEIN (GO-VEeam-INfluxdb)
 A Veeam Backup & Replication metrics exporter.     
 An evolution of Jorge's great work https://github.com/jorgedlcruz/veeam-backup-and-replication-grafana.    
+![img.png](img.png)
 Re-written in GO for better adoption and ease of use, mainly in containerized environments.
 
 
