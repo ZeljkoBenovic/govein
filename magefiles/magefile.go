@@ -40,7 +40,7 @@ func RunWithConfig(configFile string) error {
 }
 
 // Run with docker compose
-func RunDocker() error {
+func Docker() error {
 	cmd := exec.Command("docker", "compose", "-f", "docker/docker-compose.yaml", "up", "-d")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

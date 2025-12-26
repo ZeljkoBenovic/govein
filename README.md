@@ -73,5 +73,25 @@ but instead of `veeam_backup_and_replication.sh` use this exporter.
 * Install using `helm install my-govein govein/govein`
 * Uninstall with `helm uninstall my-govein`
 
+## Local testing
+This repo uses [Mage](https://magefile.org/) instead of `Makefiles` as it is GO native and more versatile.    
+Install Mage with `brew install mage` (Mac), `scoop install mage` (Win) or use [releases](https://github.com/magefile/mage/releases) page.
+
+### Docker stack
+Local docker stack uses `docker compose` to deploy `InfluxDB`, `Grafana` and `GOVEIN` services. 
+The only think which needs to be provided are Veeam credentials and API URL. 
+
+Running the stack:
+* Modify `examples/config-example.yaml` to fit your environment
+* Add in your Veeam API URL to the config file
+* If your Veeam server has a self-signed certificate, set `trust_self_signed_cert: true` in the config file
+* Modify `VEEAM_ADMIN_USERNAME` and `VEEAM_ADMIN_PASSWORD` to match your Veeam server credentials
+* Run the stack with `mage docker` (must nave Mage installed)
+* Open grafana on `http://localhost:3000`, login using `admin/admin` and navigate to the dashboard
+
+### GO run
+* Create `config-local.yaml` file with your own config
+* Run `mage` - it will run `go run main.go` by default
+
 ## License
 MIT

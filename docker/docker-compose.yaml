@@ -1,6 +1,6 @@
 services:
   govein:
-    image: "govein:latest"
+    image: "ghcr.io/zeljkobenovic/govein:0.0.2"
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -12,5 +12,48 @@ services:
     environment:
       - VEEAM_ADMIN_USERNAME=admin
       - VEEAM_ADMIN_PASSWORD=password
-      - INFLUXDB_TOKEN=secret-token
-      - INFLUXDB_ORG=secret-org
+      - INFLUXDB_TOKEN=govein_token
+      - INFLUXDB_ORG_NAME=govein
+    depends_on:
+      influxdb:
+        condition: service_healthy
+  influxdb:
+    image: influxdb
+    hostname: influxdb
+    ports:
+      - '8086:8086'
+    volumes:
+      - influxdb-storage:/var/lib/influxdb
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f -H 'Authorization: Bearer ${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}' http://localhost:8086/ping || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_ORG=govein
+      - DOCKER_INFLUXDB_INIT_BUCKET=veeam
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=govein_token
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ../examples/grafana-provisioning.yaml:/etc/grafana/provisioning/datasources/automatic.yaml
+      - ../examples/grafana-dashboard.json:/etc/grafana/provisioning/dashboards/grafana-dashboard.json
+      - ../examples/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/automatic.yaml
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - DOCKER_INFLUXDB_INIT_ORG=govein
+      - DOCKER_INFLUXDB_INIT_BUCKET=veeam
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=govein_token
+volumes:
+  influxdb-storage:
+  grafana-storage:

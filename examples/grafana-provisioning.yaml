@@ -1,0 +1,15 @@
+apiVersion: 1
+datasources:
+  - name: influxdb
+    version: 2
+    uid: bece07ekytxc0c
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    jsonData:
+      defaultBucket: veeam
+      httpMode: POST
+      organization: govein
+      version: Flux
+    secureJsonData:
+      token: govein_token

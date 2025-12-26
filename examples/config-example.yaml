@@ -23,7 +23,7 @@ influx:
   # influxdb organisation - can be set using env var
   org: <influxdb-org-name or INFLUXDB_ORG_NAME env var>
   # influxdb bucket - must be prepared in advance on influxdb server
-  bucket: veeam(must be created)
+  bucket: veeam
 # log level (INFO, DEBUG, ERROR)
 log_level: INFO
 # scrape interval
