@@ -1,7 +1,9 @@
+# -- The number of replicas
 replicaCount: 1
 image:
   repository: ghcr.io/zeljkobenovic/govein
   pullPolicy: IfNotPresent
+  # -- If not defined appVersion is used instead
   tag: ""
 imagePullSecrets: []
 nameOverride: ""
@@ -17,8 +19,10 @@ podSecurityContext: {}
 securityContext: {}
 service:
   type: ClusterIP
+  # -- Used for http healthcheck probe
   port: 8080
 resources:
+  # -- GOVEIN resource requirements are very low
   requests:
     cpu: 100m
     memory: 16Mi
@@ -36,20 +40,33 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 secrets:
+  # -- Use variables to create secrets https://github.com/ZeljkoBenovic/govein/blob/4efa289625e71f4f742ba3ad07f0e21ed6bbecaa/docker/docker-compose.yaml#L13-L16
   enabled: false
+  # -- Provide existing Kubernetes secret name
   existingSecretName: ""
+  # -- Will be created as secret INFLUXDB_ORG_NAME
   influxDBOrgName: ""
+  # -- Will be created as secret INFLUXDB_TOKEN
   influxDBToken: ""
+  # -- Will be created as secret VEEAM_ADMIN_PASSWORD
   veeamAdminPassword: ""
+  # -- Will be created as secret VEEAM_ADMIN_USERNAME
   veeamAdminUsername: ""
+# -- GOVEIN configuration https://github.com/ZeljkoBenovic/govein/blob/master/examples/config-example.yaml
 config:
   veeam:
+    # -- Veeam host API endpoint (https://<host_ip>:9419)
     host: ""
+    # -- Veeam API version
     x_api_version: 1.2-rev0
+    # -- Set to true if Veeam server has a self-signed certificate
     trust_self_signed_cert: false
+    # -- Exclude these job types from being scraped, usually internal Veeam jobs such as MalwareDetection with runs constantly
     excluded_job_types:
       MalwareDetection: {}
       SecurityComplianceAnalyzer: {}
   influx:
+    # -- InfluxDB host API
     host: http://influxdb:8086
+    # -- InfluxDB bucket name which needs to exist beforehand
     bucket: veeam
