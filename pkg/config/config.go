@@ -11,10 +11,12 @@ import (
 )
 
 type Config struct {
-	Veeam           Veeam  `yaml:"veeam"`
-	Influx          Influx `yaml:"influx"`
-	LogLevel        string `yaml:"log_level"`
-	IntervalSeconds int    `yaml:"interval_seconds"`
+	Veeam               Veeam  `yaml:"veeam"`
+	Influx              Influx `yaml:"influx"`
+	LogLevel            string `yaml:"log_level"`
+	IntervalSeconds     int    `yaml:"interval_seconds"`
+	HealthCheckPort     int    `yaml:"health_check_port"`
+	HealthCheckEndpoint string `yaml:"health_check_endpoint"`
 }
 
 type Veeam struct {
@@ -59,8 +61,10 @@ func NewConfig() (Config, error) {
 			Org:    "<influxdb-org-name or INFLUXDB_ORG_NAME>",
 			Bucket: "<influxdb-bucket-name>",
 		},
-		LogLevel:        "INFO",
-		IntervalSeconds: 3600,
+		LogLevel:            "INFO",
+		IntervalSeconds:     3600,
+		HealthCheckPort:     8080,
+		HealthCheckEndpoint: "/healthz",
 	}
 
 	// export config.yaml example

@@ -2,9 +2,11 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,11 +18,12 @@ import (
 )
 
 type App struct {
-	influx *influx.Influx
-	veeam  *veeam.Veeam
-	conf   config.Config
-	ctx    context.Context
-	log    *slog.Logger
+	influx         *influx.Influx
+	veeam          *veeam.Veeam
+	conf           config.Config
+	ctx            context.Context
+	log            *slog.Logger
+	healthCheckErr chan error
 }
 
 func New() (*App, error) {
@@ -55,11 +58,12 @@ func New() (*App, error) {
 	}
 
 	return &App{
-		ctx:    ctx,
-		log:    log,
-		conf:   conf,
-		veeam:  v,
-		influx: i,
+		ctx:            ctx,
+		log:            log,
+		conf:           conf,
+		veeam:          v,
+		influx:         i,
+		healthCheckErr: make(chan error),
 	}, nil
 }
 
@@ -76,6 +80,8 @@ func (a *App) Run() error {
 		a.influx.FlushAndClose()
 		os.Exit(0)
 	}()
+
+	go a.runHealthcheckHTTPEndpoint()
 
 	a.log.Info("Gathering data on time interval", "seconds", a.conf.IntervalSeconds)
 
@@ -130,6 +136,51 @@ func (a *App) Run() error {
 		}
 
 		a.log.Info("Veeam metrics collection successfully completed")
-		<-tick
+		select {
+		case <-a.ctx.Done():
+			return nil
+		case <-tick:
+			continue
+		case err := <-a.healthCheckErr:
+			return err
+		}
+	}
+}
+
+func (a *App) runHealthcheckHTTPEndpoint() {
+	http.HandleFunc(a.conf.HealthCheckEndpoint, func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		a.log.Info("Running health check probe")
+
+		if err := a.influx.Ping(); err != nil {
+			resp := map[string]string{"status": "error", "component": "influxdb", "error": err.Error()}
+			w.WriteHeader(500)
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(resp)
+			a.healthCheckErr <- err
+			return
+		}
+
+		if err := a.veeam.Ping(); err != nil {
+			resp := map[string]string{"status": "error", "component": "veeam", "error": err.Error()}
+			w.WriteHeader(500)
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(resp)
+			a.healthCheckErr <- err
+			return
+		}
+
+		resp := map[string]string{"status": "ok"}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(resp)
+
+		end := time.Now()
+		a.log.Info("Health check endpoint done", "done_at", end.Format(time.RFC3339), "duration", fmt.Sprintf("%dms", end.Sub(start).Milliseconds()))
+	})
+
+	a.log.Info("Health check endpoint started", "port", a.conf.HealthCheckPort)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", a.conf.HealthCheckPort), nil); err != nil {
+		a.log.Error("Failed to start healthcheck endpoint", "error", err)
+		os.Exit(1)
 	}
 }

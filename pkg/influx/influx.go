@@ -2,6 +2,7 @@ package influx
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -206,5 +207,19 @@ func (i *Influx) FlushAndClose() error {
 		return err
 	}
 	i.cl.Close()
+	return nil
+}
+
+func (i *Influx) Ping() error {
+	i.log.Info("Pinging influxdb server")
+
+	isRunning, err := i.cl.Ping(i.ctx)
+	if err != nil {
+		return err
+	}
+	if !isRunning {
+		return errors.New("influxdb server ping failed")
+	}
+
 	return nil
 }
